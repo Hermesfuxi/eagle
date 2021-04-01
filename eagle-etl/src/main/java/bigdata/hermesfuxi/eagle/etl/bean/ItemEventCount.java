@@ -67,4 +67,16 @@ public class ItemEventCount {
     public void setEnd(Long end) {
         this.end = end;
     }
+
+    @Override
+    public String toString() {
+        return "ItemEventCount{" +
+                "eventId='" + eventId + '\'' +
+                ", categoryId='" + categoryId + '\'' +
+                ", productId='" + productId + '\'' +
+                ", count=" + count +
+                ", start=" + start +
+                ", end=" + end +
+                '}';
+    }
 }

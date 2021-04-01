@@ -4,7 +4,9 @@ import bigdata.hermesfuxi.eagle.etl.bean.DataLogBean;
 import bigdata.hermesfuxi.eagle.etl.bean.ItemEventCount;
 import bigdata.hermesfuxi.eagle.etl.utils.FlinkUtils;
 import com.alibaba.fastjson.JSON;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.functions.RichAggregateFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ListState;
@@ -40,7 +42,7 @@ public class HotItemsWindowTopN {
                 DataLogBean bean = JSON.parseObject(value, DataLogBean.class);
                 if (bean != null && bean.getEventId().startsWith("product")) {
                     Map map = bean.getProperties();
-                    if (map != null && map.containsKey("categoryId") && map.containsKey("productId")) {
+                    if (map != null && map.containsKey("category_id") && map.containsKey("product_id")) {
                         out.collect(bean);
                     }
                 }
@@ -50,7 +52,12 @@ public class HotItemsWindowTopN {
         //按照EventTime划分窗口
         SingleOutputStreamOperator<DataLogBean> beanStreamWithWaterMark = beanStream.assignTimestampsAndWatermarks(
                 WatermarkStrategy.<DataLogBean>forBoundedOutOfOrderness(Duration.ofMillis(5000))
-                        .withTimestampAssigner((bean, ts) -> bean.getTimestamp()));
+                        .withTimestampAssigner(new SerializableTimestampAssigner<DataLogBean>() {
+                            @Override
+                            public long extractTimestamp(DataLogBean element, long recordTimestamp) {
+                                return element.getTimestamp();
+                            }
+                        }));
 
         // 使用<eventId、categoryId、productId> 分组
         KeyedStream<DataLogBean, Tuple3<String, String, String>> keyedStream = beanStreamWithWaterMark.keyBy(new KeySelector<DataLogBean, Tuple3<String, String, String>>() {
@@ -58,13 +65,13 @@ public class HotItemsWindowTopN {
             public Tuple3<String, String, String> getKey(DataLogBean bean) throws Exception {
                 String eventId = bean.getEventId();
                 Map map = bean.getProperties();
-                String categoryId = (String) map.get("categoryId");
-                String productId = (String) map.get("productId");
+                String categoryId = String.valueOf(map.get("category_id"));
+                String productId = String.valueOf(map.get("product_id"));
                 return Tuple3.of(eventId, categoryId, productId);
             }
         });
 
-        WindowedStream<DataLogBean, Tuple3<String, String, String>, TimeWindow> window = keyedStream.window(SlidingEventTimeWindows.of(Time.minutes(10), Time.minutes(1)));
+        WindowedStream<DataLogBean, Tuple3<String, String, String>, TimeWindow> window = keyedStream.window(SlidingEventTimeWindows.of(Time.seconds(20), Time.seconds(5)));
 
         SingleOutputStreamOperator<ItemEventCount> aggregateWindow = window.aggregate(new AggregateWindowFunction(), new DataCollectWindowFunction());
 
@@ -85,7 +92,7 @@ public class HotItemsWindowTopN {
     /**
      * window增量聚合计算（来一条，处理一条）
      */
-    static class  AggregateWindowFunction extends RichAggregateFunction<DataLogBean, Long, Long> {
+    static class  AggregateWindowFunction implements AggregateFunction<DataLogBean, Long, Long> {
         @Override
         public Long createAccumulator() {
             return 0L;

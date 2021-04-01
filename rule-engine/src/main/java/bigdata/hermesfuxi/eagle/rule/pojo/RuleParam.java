@@ -20,22 +20,33 @@ public class RuleParam implements Serializable {
     private String ruleId;
 
     // 规则中的触发条件
-    private RuleAtomicParam triggerParam;
+    private AtomicRuleParam triggerParam;
 
     // 规则中的用户画像条件
     private HashMap<String,String> userProfileParams;
 
     // 规则中的行为次数类条件
-    private List<RuleAtomicParam> userActionCountParams;
+    private List<AtomicRuleParam> userActionCountParams;
 
     // 规则中的行为次序类条件
-    private List<RuleAtomicParam> userActionSequenceParams;
+    private List<AtomicRuleParam> userActionSequenceParams;
+
+    // 序列模式匹配查询sql
+    private String actionSequenceQuerySql;
 
     // 用于记录查询服务所返回的序列中匹配的最大步骤号
     private int userActionSequenceQueriedMaxStep;
 
     // 用于记录查询服务所返回的序列中匹配的最大步骤号
     private int userActionSequenceQueriedNextStepIndex;
+
+    public String getActionSequenceQuerySql() {
+        return actionSequenceQuerySql;
+    }
+
+    public void setActionSequenceQuerySql(String actionSequenceQuerySql) {
+        this.actionSequenceQuerySql = actionSequenceQuerySql;
+    }
 
     public String getRuleId() {
         return ruleId;
@@ -45,11 +56,11 @@ public class RuleParam implements Serializable {
         this.ruleId = ruleId;
     }
 
-    public RuleAtomicParam getTriggerParam() {
+    public AtomicRuleParam getTriggerParam() {
         return triggerParam;
     }
 
-    public void setTriggerParam(RuleAtomicParam triggerParam) {
+    public void setTriggerParam(AtomicRuleParam triggerParam) {
         this.triggerParam = triggerParam;
     }
 
@@ -61,19 +72,19 @@ public class RuleParam implements Serializable {
         this.userProfileParams = userProfileParams;
     }
 
-    public List<RuleAtomicParam> getUserActionCountParams() {
+    public List<AtomicRuleParam> getUserActionCountParams() {
         return userActionCountParams;
     }
 
-    public void setUserActionCountParams(List<RuleAtomicParam> userActionCountParams) {
+    public void setUserActionCountParams(List<AtomicRuleParam> userActionCountParams) {
         this.userActionCountParams = userActionCountParams;
     }
 
-    public List<RuleAtomicParam> getUserActionSequenceParams() {
+    public List<AtomicRuleParam> getUserActionSequenceParams() {
         return userActionSequenceParams;
     }
 
-    public void setUserActionSequenceParams(List<RuleAtomicParam> userActionSequenceParams) {
+    public void setUserActionSequenceParams(List<AtomicRuleParam> userActionSequenceParams) {
         this.userActionSequenceParams = userActionSequenceParams;
     }
 

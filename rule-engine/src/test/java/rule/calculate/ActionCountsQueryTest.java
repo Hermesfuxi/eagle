@@ -1,9 +1,9 @@
 package rule.calculate;
 
 import bigdata.hermesfuxi.eagle.rule.pojo.LogBean;
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleAtomicParam;
+import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
 import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
-import bigdata.hermesfuxi.eagle.rule.service.UserActionCountQueryServiceStateImpl;
+import bigdata.hermesfuxi.eagle.rule.service.realtime.UserActionCountQueryServiceStateImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,30 +56,30 @@ public class ActionCountsQueryTest {
 
 
         // 构造2个规则原子条件
-        RuleAtomicParam param1 = new RuleAtomicParam();
+        AtomicRuleParam param1 = new AtomicRuleParam();
         param1.setEventId("010");
         HashMap<String, String> paramProps1 = new HashMap<>();
         paramProps1.put("p1","v1");
         param1.setProperties(paramProps1);
         param1.setCnts(2);
 
-        RuleAtomicParam param2 = new RuleAtomicParam();
+        AtomicRuleParam param2 = new AtomicRuleParam();
         param2.setEventId("020");
         HashMap<String, String> paramProps2 = new HashMap<>();
         paramProps2.put("p2","v3");
         param2.setProperties(paramProps2);
         param2.setCnts(2);
 
-        ArrayList<RuleAtomicParam> ruleParams = new ArrayList<>();
+        ArrayList<AtomicRuleParam> ruleParams = new ArrayList<>();
         ruleParams.add(param1);
         ruleParams.add(param2);
 
         RuleParam ruleParam = new RuleParam();
         ruleParam.setUserActionCountParams(ruleParams);
-        service.queryActionCounts(eventList, ruleParam);
+        service.ruleQueryCalculate(eventList, ruleParam);
 
-        for (RuleAtomicParam ruleAtomicParam : ruleParams) {
-            System.out.println(ruleAtomicParam.getEventId()+","+ruleAtomicParam.getCnts() + "," + ruleAtomicParam.getRealCnts());
+        for (AtomicRuleParam atomicRuleParam : ruleParams) {
+            System.out.println(atomicRuleParam.getEventId()+","+ atomicRuleParam.getCnts() + "," + atomicRuleParam.getRealCnts());
         }
     }
 }

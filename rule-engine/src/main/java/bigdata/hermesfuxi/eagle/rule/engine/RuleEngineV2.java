@@ -2,13 +2,19 @@ package bigdata.hermesfuxi.eagle.rule.engine;
 
 import bigdata.hermesfuxi.eagle.rule.pojo.LogBean;
 import bigdata.hermesfuxi.eagle.rule.pojo.ResultBean;
+import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
 import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
-import bigdata.hermesfuxi.eagle.rule.service.*;
+import bigdata.hermesfuxi.eagle.rule.service.UserProfileQueryService;
+import bigdata.hermesfuxi.eagle.rule.service.UserProfileQueryServiceHbaseImpl;
+import bigdata.hermesfuxi.eagle.rule.service.offline.OfflineRuleQueryCalculateService;
+import bigdata.hermesfuxi.eagle.rule.service.offline.UserActionCountQueryServiceClickhouseImpl;
+import bigdata.hermesfuxi.eagle.rule.service.offline.UserActionSequenceQueryServiceClickhouseImpl;
 import bigdata.hermesfuxi.eagle.rule.service.realtime.RealTimeRuleQueryCalculateService;
 import bigdata.hermesfuxi.eagle.rule.service.realtime.UserActionCountQueryServiceStateImpl;
 import bigdata.hermesfuxi.eagle.rule.service.realtime.UserActionSequenceQueryServiceStateImpl;
 import bigdata.hermesfuxi.eagle.rule.utils.RuleSimulator;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
@@ -21,7 +27,7 @@ import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.util.Collector;
 
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author hermesfuxi
@@ -33,7 +39,7 @@ import java.util.Properties;
  * 行为属性条件：  U(p1=v3,p2=v2) >= 3次 且  G(p6=v8,p4=v5,p1=v2)>=1
  * 行为次序条件：  依次做过：  W(p1=v4) ->   R(p2=v3) -> F
  */
-public class RuleEngineV1 {
+public class RuleEngineV2 {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 //        env.enableCheckpointing(10000, CheckpointingMode.EXACTLY_ONCE);
@@ -78,6 +84,8 @@ public class RuleEngineV1 {
         private transient UserProfileQueryService userProfileQueryService;
         private transient RealTimeRuleQueryCalculateService userActionCountQueryService;
         private transient RealTimeRuleQueryCalculateService userActionSequenceQueryService;
+        private transient OfflineRuleQueryCalculateService userActionCountQueryClickhouseService;
+        private transient OfflineRuleQueryCalculateService userActionSequenceQueryClickhouseService;
         private transient RuleParam ruleParam;
 
         @Override
@@ -87,8 +95,15 @@ public class RuleEngineV1 {
             eventState = getRuntimeContext().getListState(eventStateDesc);
 
             userProfileQueryService = new UserProfileQueryServiceHbaseImpl();
+
+            // 实时查询
             userActionCountQueryService = new UserActionCountQueryServiceStateImpl();
             userActionSequenceQueryService = new UserActionSequenceQueryServiceStateImpl();
+
+            // 离线查询（通过clickhouse）
+            userActionCountQueryClickhouseService = new UserActionCountQueryServiceClickhouseImpl();
+            userActionSequenceQueryClickhouseService = new UserActionSequenceQueryServiceClickhouseImpl();
+
             ruleParam = RuleSimulator.getRuleParam();
         }
 
@@ -98,28 +113,78 @@ public class RuleEngineV1 {
             eventState.add(logBean);
             Iterable<LogBean> logBeans = eventState.get();
 
+            // 计算事件时间的前1小时的整点时间戳，作数据切割
+            long splitPoint = DateUtils.addHours(DateUtils.ceiling(new Date(logBean.getTimeStamp()), Calendar.HOUR), -2).getTime();
+
             // 判断当前的用户行为是否满足规则中的触发条件
             // 触发条件
             if (ruleParam.getTriggerParam().getEventId().equals(logBean.getEventId())) {
                 String deviceId = logBean.getDeviceId();
-
                 boolean userProfileQueryFlag = userProfileQueryService.judgeProfileCondition(deviceId, ruleParam);
-
                 // 如果画像属性条件全部满足
                 if (userProfileQueryFlag) {
-                    boolean userActionCountQueryFlag = userActionCountQueryService.ruleQueryCalculate(logBeans, ruleParam);
-                    // 如果行为次数条件也满足
-                    if (userActionCountQueryFlag) {
-                        boolean userActionSequenceQuery = userActionSequenceQueryService.ruleQueryCalculate(logBeans, ruleParam);
-                        // 若 用户行为次序列条件 也满足
-                        if (userActionSequenceQuery) {
-                            ResultBean resultBean = new ResultBean();
-                            resultBean.setDeviceId(deviceId);
-                            resultBean.setRuleId(ruleParam.getRuleId());
-                            resultBean.setTimeStamp(logBean.getTimeStamp());
-                            out.collect(resultBean);
+
+                    // --------- 判断次数条件 ------------
+                    ArrayList<AtomicRuleParam> offlineRangeParams = new ArrayList<>();  // 离线条件list
+                    ArrayList<AtomicRuleParam> realTimeRangeParams = new ArrayList<>();  // 实时条件list
+                    List<AtomicRuleParam> userActionCountParams = ruleParam.getUserActionCountParams();
+                    for (AtomicRuleParam userActionCountParam : userActionCountParams) {
+                        if (userActionCountParam.getRangeStart() < splitPoint) {
+                            // 如果条件起始时间 < 分界点，放入离线条件租
+                            offlineRangeParams.add(userActionCountParam);
+                        } else {
+                            // 如果条件起始时间 >= 分界点，放入实时条件组
+                            realTimeRangeParams.add(userActionCountParam);
                         }
                     }
+
+                    // 在clickhouse中查询离线条件组
+                    if (offlineRangeParams.size() > 0) {
+                        // 将规则总参数对象中的“次数类条件”覆盖成： 远期条件组
+                        ruleParam.setUserActionCountParams(offlineRangeParams);
+                        boolean offlineUserActionCountQueryFlag = userActionCountQueryClickhouseService.ruleQueryCalculate(deviceId, ruleParam);
+                        if (!offlineUserActionCountQueryFlag) {
+                            return;
+                        }
+                    }
+
+                    // 在state中计算实时条件组
+                    if (realTimeRangeParams.size() > 0) {
+                        // 将规则总参数对象中的“次数类条件”覆盖成： 近期条件组
+                        ruleParam.setUserActionCountParams(realTimeRangeParams);
+                        // 交给stateService对这一组条件进行计算
+                        boolean realTimeUserActionCountQueryFlag = userActionCountQueryService.ruleQueryCalculate(logBeans, ruleParam);
+                        if (!realTimeUserActionCountQueryFlag) {
+                            return;
+                        }
+                    }
+
+                    // UserActionCount 行为次数混合条件
+
+                    // --------- 判断次序条件 ------------
+                    List<AtomicRuleParam> userActionSequenceParams = ruleParam.getUserActionSequenceParams();
+
+                    if (userActionSequenceParams != null && userActionSequenceParams.size() > 0) {
+                        long rangeStart = userActionSequenceParams.get(0).getRangeStart();
+                        if (rangeStart >= splitPoint) {
+                            // flink 实时计算
+                            if (!userActionSequenceQueryService.ruleQueryCalculate(logBeans, ruleParam)) {
+                                return;
+                            }
+                        } else {
+                            // clickhouse 计算
+                            if (!userActionSequenceQueryClickhouseService.ruleQueryCalculate(deviceId, ruleParam)) {
+                                return;
+                            }
+                        }
+
+                    }
+
+                    ResultBean resultBean = new ResultBean();
+                    resultBean.setDeviceId(deviceId);
+                    resultBean.setRuleId(ruleParam.getRuleId());
+                    resultBean.setTimeStamp(logBean.getTimeStamp());
+                    out.collect(resultBean);
                 }
             }
         }

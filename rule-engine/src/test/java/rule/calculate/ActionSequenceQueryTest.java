@@ -1,15 +1,15 @@
 package rule.calculate;
 
 import bigdata.hermesfuxi.eagle.rule.pojo.LogBean;
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleAtomicParam;
+import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
 import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
-import bigdata.hermesfuxi.eagle.rule.service.UserActionSequenceQueryServiceStateImpl;
+import bigdata.hermesfuxi.eagle.rule.service.realtime.UserActionSequenceQueryServiceStateImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ActionSequenceQueryTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
         // 构造一些事件
         LogBean logBean1 = new LogBean();
@@ -56,25 +56,25 @@ public class ActionSequenceQueryTest {
         eventList.add(logBean4);
 
         // 构造一个序列条件
-        RuleAtomicParam param1 = new RuleAtomicParam();
+        AtomicRuleParam param1 = new AtomicRuleParam();
         param1.setEventId("010");
         HashMap<String, String> paramProps1 = new HashMap<>();
         paramProps1.put("p1","v1");
         param1.setProperties(paramProps1);
 
-        RuleAtomicParam param2 = new RuleAtomicParam();
+        AtomicRuleParam param2 = new AtomicRuleParam();
         param2.setEventId("020");
         HashMap<String, String> paramProps2 = new HashMap<>();
         paramProps2.put("p2","v2");
         param2.setProperties(paramProps2);
 
-        RuleAtomicParam param3 = new RuleAtomicParam();
+        AtomicRuleParam param3 = new AtomicRuleParam();
         param3.setEventId("020");
         HashMap<String, String> paramProps3 = new HashMap<>();
         paramProps3.put("p4","v5");
         param3.setProperties(paramProps3);
 
-        ArrayList<RuleAtomicParam> ruleSequenceParams = new ArrayList<>();
+        ArrayList<AtomicRuleParam> ruleSequenceParams = new ArrayList<>();
         ruleSequenceParams.add(param1);
         ruleSequenceParams.add(param2);
         ruleSequenceParams.add(param3);
@@ -83,7 +83,7 @@ public class ActionSequenceQueryTest {
         UserActionSequenceQueryServiceStateImpl service = new UserActionSequenceQueryServiceStateImpl();
         RuleParam ruleParam = new RuleParam();
         ruleParam.setUserActionSequenceParams(ruleSequenceParams);
-        boolean flag = service.queryActionSequence(eventList, ruleParam);
+        boolean flag = service.ruleQueryCalculate(eventList, ruleParam);
         System.out.println(flag);
         System.out.println(ruleParam.getUserActionSequenceQueriedMaxStep());
     }

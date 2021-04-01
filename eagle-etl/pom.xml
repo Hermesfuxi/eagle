@@ -44,6 +44,28 @@
             <version>1.2.75</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.roaringbitmap/RoaringBitmap -->
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>0.9.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/net.agkn/hll -->
+        <dependency>
+            <groupId>net.agkn</groupId>
+            <artifactId>hll</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.addthis/stream-lib -->
+        <dependency>
+            <groupId>com.addthis</groupId>
+            <artifactId>stream-lib</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+
         <!-- Apache Flink dependencies -->
         <!-- These dependencies are provided, because they should not be packaged into the JAR file. -->
         <dependency>

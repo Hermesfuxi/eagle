@@ -1,7 +1,7 @@
-package bigdata.hermesfuxi.eagle.rule.service;
+package bigdata.hermesfuxi.eagle.rule.utils;
 
 import bigdata.hermesfuxi.eagle.rule.pojo.LogBean;
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleAtomicParam;
+import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,11 +10,11 @@ import java.util.Set;
 /**
  * @author Hermesfuxi
  */
-public class RuleCalculate {
+public class RuleCalculateUtils {
     /**
      * 工具方法，用于判断一个待判断事件和一个规则中的原子条件是否一致
      */
-    public static boolean eventBeanMatchEventParam(LogBean eventBean, RuleAtomicParam eventParam) {
+    public static boolean eventBeanMatchEventParam(LogBean eventBean, AtomicRuleParam eventParam) {
         // 如果传入的一个事件的事件id与参数中的事件id相同，才开始进行属性判断
         if (eventBean.getEventId().equals(eventParam.getEventId())) {
 
@@ -35,7 +35,7 @@ public class RuleCalculate {
         return false;
     }
 
-    public static boolean eventBeanMatchEventParam(LogBean eventBean, RuleAtomicParam eventParam, boolean neeTimeCompare) {
+    public static boolean eventBeanMatchEventParam(LogBean eventBean, AtomicRuleParam eventParam, boolean neeTimeCompare) {
         boolean flag = eventBeanMatchEventParam(eventBean, eventParam);
         // 要考虑一点，外部传入的条件中，时间范围条件，如果起始、结束没有约束，应该传入一个 -1
         long start = eventParam.getRangeStart();

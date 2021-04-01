@@ -1,6 +1,6 @@
 package bigdata.hermesfuxi.eagle.rule.utils;
 
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleAtomicParam;
+import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
 import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class RuleSimulator {
         ruleParam.setRuleId("test_rule_1");
 
         // 构造触发条件
-        RuleAtomicParam trigger = new RuleAtomicParam();
+        AtomicRuleParam trigger = new AtomicRuleParam();
         trigger.setEventId("E");
         ruleParam.setTriggerParam(trigger);
 
@@ -31,7 +31,7 @@ public class RuleSimulator {
 
 
         // 行为次数条件
-        RuleAtomicParam count1 = new RuleAtomicParam();
+        AtomicRuleParam count1 = new AtomicRuleParam();
         count1.setEventId("B");
         HashMap<String, String> paramProps1 = new HashMap<>();
         paramProps1.put("p1","v1");
@@ -50,14 +50,14 @@ public class RuleSimulator {
 //        count2.setCnts(1);
 
 
-        ArrayList<RuleAtomicParam> countParams = new ArrayList<>();
+        ArrayList<AtomicRuleParam> countParams = new ArrayList<>();
         countParams.add(count1);
 //        countParams.add(count2);
         ruleParam.setUserActionCountParams(countParams);
 
 
         // 行为序列条件(3个事件的序列）
-        RuleAtomicParam param1 = new RuleAtomicParam();
+        AtomicRuleParam param1 = new AtomicRuleParam();
         param1.setEventId("A");
         HashMap<String, String> seqProps1 = new HashMap<>();
         seqProps1.put("p1","v1");
@@ -65,7 +65,7 @@ public class RuleSimulator {
         param1.setRangeStart(-1);
         param1.setRangeEnd(-1);
 
-        RuleAtomicParam param2 = new RuleAtomicParam();
+        AtomicRuleParam param2 = new AtomicRuleParam();
         param2.setEventId("C");
         HashMap<String, String> seqProps2 = new HashMap<>();
         seqProps2.put("p2","v2");
@@ -74,7 +74,7 @@ public class RuleSimulator {
         param2.setRangeEnd(-1);
 
 
-        ArrayList<RuleAtomicParam> ruleParams = new ArrayList<>();
+        ArrayList<AtomicRuleParam> ruleParams = new ArrayList<>();
         ruleParams.add(param1);
         ruleParams.add(param2);
 

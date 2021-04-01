@@ -1,8 +1,8 @@
 package bigdata.hermesfuxi.eagle.etl.utils;
 
-
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -15,7 +15,13 @@ import java.util.Arrays;
 import java.util.Properties;
 
 public class FlinkUtils {
-    public static final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    public static StreamExecutionEnvironment env;
+
+    static {
+        Configuration conf = new Configuration();
+        conf.setInteger("rest.port", 22222);
+        env = StreamExecutionEnvironment.getExecutionEnvironment(conf);
+    }
 
     public static <T> DataStream<T> getKafkaSource(String[] args, Class<? extends DeserializationSchema<T>> deserializer) throws Exception {
         // 从配置文件中读取相关参数（输入参数配置文件名）

@@ -11,7 +11,7 @@ import java.util.HashMap;
  * @author hermesfuxi
  * desc 规则参数中的原子条件封装实体
  */
-public class RuleAtomicParam implements Serializable {
+public class AtomicRuleParam implements Serializable {
 
     // 事件的类型要求
     private String eventId;

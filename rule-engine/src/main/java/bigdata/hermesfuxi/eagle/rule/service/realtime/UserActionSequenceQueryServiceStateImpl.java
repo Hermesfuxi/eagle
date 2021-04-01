@@ -1,8 +1,9 @@
-package bigdata.hermesfuxi.eagle.rule.service;
+package bigdata.hermesfuxi.eagle.rule.service.realtime;
 
 import bigdata.hermesfuxi.eagle.rule.pojo.LogBean;
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleAtomicParam;
+import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
 import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
+import bigdata.hermesfuxi.eagle.rule.utils.RuleCalculateUtils;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @author hermesfuxi
  * desc 用户行为次序类条件查询服务实现（在state中查询）
  */
-public class UserActionSequenceQueryServiceStateImpl implements UserActionSequenceQueryService {
+public class UserActionSequenceQueryServiceStateImpl implements RealTimeRuleQueryCalculateService {
 
 
     /**
@@ -22,10 +23,9 @@ public class UserActionSequenceQueryServiceStateImpl implements UserActionSequen
      * @return 条件成立与否
      */
     @Override
-    public boolean queryActionSequence(Iterable<LogBean> logBeans, RuleParam ruleParam) {
-
-        // 则，继续判断行为次序条件：  依次做过：  W(p1=v4) ->   R(p2=v3) -> F
-        List<RuleAtomicParam> userActionSequenceParams = ruleParam.getUserActionSequenceParams();
+    public Boolean ruleQueryCalculate(Iterable<LogBean> logBeans, RuleParam ruleParam) throws Exception {
+// 则，继续判断行为次序条件：  依次做过：  W(p1=v4) ->   R(p2=v3) -> F
+        List<AtomicRuleParam> userActionSequenceParams = ruleParam.getUserActionSequenceParams();
         int maxStep = ruleParam.getUserActionSequenceQueriedMaxStep();
         int nextIndex = ruleParam.getUserActionSequenceQueriedNextStepIndex();
 
@@ -37,7 +37,7 @@ public class UserActionSequenceQueryServiceStateImpl implements UserActionSequen
             for (LogBean logBean : logBeans) {
                 index++;
                 if (index >= nextIndex && maxStep <= userActionSequenceParams.size() - 1) {
-                    boolean flag = RuleCalculate.eventBeanMatchEventParam(logBean, userActionSequenceParams.get(maxStep), true);
+                    boolean flag = RuleCalculateUtils.eventBeanMatchEventParam(logBean, userActionSequenceParams.get(maxStep), true);
                     if (flag) {
                         maxStep++;
                         ruleParam.setUserActionSequenceQueriedMaxStep(maxStep);
