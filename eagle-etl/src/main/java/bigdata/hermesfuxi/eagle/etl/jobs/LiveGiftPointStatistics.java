@@ -4,6 +4,7 @@ import bigdata.hermesfuxi.eagle.etl.bean.DataLogBean;
 import bigdata.hermesfuxi.eagle.etl.utils.FlinkUtils;
 import bigdata.hermesfuxi.eagle.etl.utils.MyKafkaDeserializationSchema;
 import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -38,7 +39,6 @@ import java.util.stream.Collectors;
  */
 public class LiveGiftPointStatistics {
     public static void main(String[] args) throws Exception {
-
         FlinkUtils.env.setParallelism(1);
         DataStream<Tuple2<String, String>> kafkaSourceV2 = FlinkUtils.getKafkaSourceV2(args, MyKafkaDeserializationSchema.class);
 

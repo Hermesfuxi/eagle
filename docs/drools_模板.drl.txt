@@ -1,0 +1,35 @@
+package rules
+
+dialect "java"
+import java.util.List
+import java.util.ArrayList
+import java.util.HashMap
+import cn.doitedu.dynamic_rule.pojo.DroolRuleFact
+import cn.doitedu.dynamic_rule.pojo.RuleParam
+import cn.doitedu.dynamic_rule.service.QueryRouterV4
+import cn.doitedu.dynamic_rule.pojo.LogBean
+
+// 规则名称
+rule "triggerTest4"
+    when
+        //触发事件为 addcart
+        $f:DroolRuleFact()
+        $r:RuleParam(triggerParam.eventId == "E") from $f.getRuleParam()
+    then
+        QueryRouterV4 queryRouter = $f.getQueryRouter();
+        RuleParam ruleParam = $f.getRuleParam();
+        LogBean logBean = $f.getLogBean();
+
+        // 添加各类规则条件
+
+
+        // 进行条件判断
+        if(
+           queryRouter.profileQuery(logBean, ruleParam) &&
+           queryRouter.sequenceConditionQuery(logBean, ruleParam) &&
+           queryRouter.countConditionQuery(logBean, ruleParam)
+        ){
+            // 设置结果
+            $f.setMatch(true);
+        }
+    end

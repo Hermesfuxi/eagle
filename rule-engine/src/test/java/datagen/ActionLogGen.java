@@ -1,7 +1,7 @@
 package datagen;
 
-import bigdata.hermesfuxi.eagle.rule.pojo.LogBean;
-import bigdata.hermesfuxi.eagle.rule.utils.RandomDataUtils;
+import bigdata.hermesfuxi.eagle.rules.pojo.LogBean;
+import bigdata.hermesfuxi.eagle.rules.utils.RandomDataUtils;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;

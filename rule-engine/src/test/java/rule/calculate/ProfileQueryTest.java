@@ -1,14 +1,14 @@
 package rule.calculate;
 
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
-import bigdata.hermesfuxi.eagle.rule.service.UserProfileQueryServiceHbaseImpl;
+import bigdata.hermesfuxi.eagle.rules.pojo.RuleParam;
+import bigdata.hermesfuxi.eagle.rules.service.UserProfileQueryServiceHbaseImpl;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * @author 涛哥
+ * @author hermesfuxi
  * desc 画像条件查询服务模块测试类
  */
 public class ProfileQueryTest {

@@ -1,9 +1,9 @@
 package rule.calculate;
 
-import bigdata.hermesfuxi.eagle.rule.pojo.LogBean;
-import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
-import bigdata.hermesfuxi.eagle.rule.service.realtime.UserActionSequenceQueryServiceStateImpl;
+import bigdata.hermesfuxi.eagle.rules.pojo.LogBean;
+import bigdata.hermesfuxi.eagle.rules.pojo.AtomicRuleParam;
+import bigdata.hermesfuxi.eagle.rules.pojo.RuleParam;
+import bigdata.hermesfuxi.eagle.rules.service.realtime.UserActionSequenceQueryServiceStateImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;

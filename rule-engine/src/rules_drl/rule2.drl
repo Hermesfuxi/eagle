@@ -1,0 +1,79 @@
+package cn.doitedu.dynamic_rules.rules
+import java.util.HashMap
+import java.util.List
+import java.util.ArrayList
+import bigdata.hermesfuxi.eagle
+import bigdata.hermesfuxi.eagle.rules.service.router.QueryRouterV4
+import bigdata.hermesfuxi.eagle.rules.pojo.AtomicRuleParam
+import bigdata.hermesfuxi.eagle.rules.pojo.RuleParam
+import bigdata.hermesfuxi.eagle.rules.pojo.LogBean
+import bigdata.hermesfuxi.eagle.rules.pojo.DroolFact
+
+rule "rule2"
+
+when
+   $d:DroolFact()
+   $b:LogBean(eventId == "F") from $d.logBean
+then
+    RuleParam ruleParam = $d.getRuleParam();
+    ruleParam.setRuleId("rule2");
+    QueryRouterV4 queryRouter = $d.getQueryRouterV4();
+
+   // 填充本规则的画像条件
+   HashMap<String,String> profileParams = new HashMap<>();
+   profileParams.put("tag7","v2");
+   profileParams.put("tag3","v1");
+   ruleParam.setUserProfileParams(profileParams);
+
+   // 填充本规则的count类条件(直接从ruleparam中取出cnt条件list，里面已经拥有sql了)
+   List<AtomicRuleParam> countParams = ruleParam.getUserActionCountParams();
+
+   AtomicRuleParam param0 = countParams.get(0);
+   param0.setEventId("H");
+   HashMap<String,String> props0 = new HashMap<>();
+   props0.put("p1","v1");
+   props0.put("p2","v3");
+   param0.setProperties(props0);
+   param0.setCnts(8);
+   param0.setOriginStart(0L);
+   param0.setOriginEnd(Long.MAX_VALUE);
+
+
+   // 填充本规则的次序列条件
+   ArrayList<AtomicRuleParam> seqParams = new ArrayList<>();
+
+   AtomicRuleParam seq0 = new AtomicRuleParam();
+   seq0.setEventId("A");
+   HashMap<String,String> seq0prop = new HashMap<>();
+   seq0prop.put("p1","v1");
+   seq0.setProperties(seq0prop);
+   seq0.setOriginStart(0L);
+   seq0.setOriginEnd(Long.MAX_VALUE);
+
+
+   AtomicRuleParam seq1 = new AtomicRuleParam();
+   seq1.setEventId("C");
+   HashMap<String,String> seq1prop = new HashMap<>();
+   seq1prop.put("p2","v2");
+   seq1.setProperties(seq1prop);
+   seq1.setOriginStart(0L);
+   seq1.setOriginEnd(Long.MAX_VALUE);
+
+   seqParams.add(seq0);
+   seqParams.add(seq1);
+
+   ruleParam.setUserActionSequenceParams(seqParams);
+
+   // 执行匹配查询计算
+   if(
+    queryRouter.profileQuery($b.getDeviceId(), ruleParam)
+      &&
+    queryRouter.sequenceConditionQuery($b, null, ruleParam)
+      &&
+    queryRouter.countConditionQuery($b, null, ruleParam)
+    ){
+       // 设置结果
+       $d.setMatch(true);
+    }
+
+end

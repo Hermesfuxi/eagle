@@ -1,8 +1,8 @@
 package rule.calculate;
 
-import bigdata.hermesfuxi.eagle.rule.pojo.AtomicRuleParam;
-import bigdata.hermesfuxi.eagle.rule.pojo.RuleParam;
-import bigdata.hermesfuxi.eagle.rule.service.offline.UserActionSequenceQueryServiceClickhouseImpl;
+import bigdata.hermesfuxi.eagle.rules.pojo.AtomicRuleParam;
+import bigdata.hermesfuxi.eagle.rules.pojo.RuleParam;
+import bigdata.hermesfuxi.eagle.rules.service.offline.UserActionSequenceQueryServiceClickhouseImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
