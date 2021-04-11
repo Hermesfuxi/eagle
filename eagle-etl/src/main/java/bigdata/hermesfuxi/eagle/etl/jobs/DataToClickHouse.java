@@ -106,7 +106,7 @@ public class DataToClickHouse {
 }
 /* clickhouse 建表语句：
 
-create table doit.tb_user_event(
+create table tb_user_event(
 gid String,
 carrier String,
 deviceId String,
