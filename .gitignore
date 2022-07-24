@@ -1,14 +1,10 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Maven template
 .idea
-*/target/
-*/pom.xml.*
+target/
+pom.xml.*
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn
+*.iml
 *.log
-*/*.log
-/metastore_db/
-/.ck/
-*/*.iml
