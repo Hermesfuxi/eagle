@@ -11,3 +11,4 @@ buildNumber.properties
 */*.log
 /metastore_db/
 /.ck/
+*/*.iml
